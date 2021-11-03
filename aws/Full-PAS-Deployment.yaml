@@ -1151,20 +1151,17 @@ Resources:
               command: systemctl enable awslogsd
         install_psmp:
           commands:
-            01-CreateCredFile:
-              command: !Sub >-
-                sudo /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred
-                Password -Username Administrator -Password ${VaultAdminPassword} -EntropyFile
-            02-PSMPdeploy:
+            01-PSMPdeploy:
               command:
                 'Fn::Sub':
                   - >-
-                    /root/CD-Image/register_and_activation.sh
-                    /root/CD-Image/user.cred ${VaultIpAddress} $(curl
-                    http://169.254.169.254/latest/meta-data/instance-id) y
+                    uid=`curl http://169.254.169.254/latest/meta-data/instance-id` &&
+                    /opt/CD-Image/register_and_activation.sh 
+                    Administrator ${VaultAdminPassword} 
+                    ${VaultIpAddress} $uid uc2-user
                   - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-            03-PostInstall:
-              command: sudo rm -rf /root/CD-Image/
+            02-PostInstall:
+              command: sudo rm -rf /opt/CD-Image/
             99-SignalCompletion:
               command: !Sub >-
                 /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
