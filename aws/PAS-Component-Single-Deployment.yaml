@@ -780,10 +780,11 @@ Resources:
             4-PSMPdeploy:
               command: !Sub
                 - >-
-                  hostname=`curl
+                  uid=`curl
                   http://169.254.169.254/latest/meta-data/instance-id` &&
-                  /root/CD-Image/register_and_activation.sh
-                  /root/CD-Image/user.cred ${VaultIpAddress} $hostname y
+                  /root/CD-Image/register_and_activation.sh 
+                  ${VaultAdminUser} ${StoreAdminPassword.SsmId} 
+                  ${VaultIpAddress} $uid root
                 - VaultIpAddress: !If
                     - DRValueEmpty
                     - !Sub '${VaultPrivateIP}'
