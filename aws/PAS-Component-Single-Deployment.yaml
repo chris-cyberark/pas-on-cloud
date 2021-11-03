@@ -738,7 +738,7 @@ Resources:
               command: systemctl enable awslogsd
         install_psmp:
           files:
-            /root/CD-Image/preinstall.sh:
+            /opt/CD-Image/preinstall.sh:
               content: |-
                 #!/bin/bash -e
 
@@ -755,34 +755,21 @@ Resources:
                 chmod 644 /etc/hosts
 
                 chmod 644 /etc/sysconfig/network
-            /root/CD-Image/createCredFile.sh:
-              content: |-
-                #!/bin/bash -e
-                adminpassword=`aws ssm get-parameters --names $2 --region $3 \
-                --with-decryption --output text --query Parameters[0].Value`
-                /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred \
-                Password -Username $1 -Password $adminpassword -EntropyFile
           commands:
             1-ScriptsPermissions:
               command: >-
-                sudo chmod 700 /root/CD-Image/preinstall.sh
-                /root/CD-Image/createCredFile.sh
+                sudo chmod 700 /opt/CD-Image/preinstall.sh
               waitAfterCompletion: 0
             2-PreInstall:
               command: !Sub >
-                sudo /root/CD-Image/preinstall.sh ${ComponentHostName}
+                sudo /opt/CD-Image/preinstall.sh ${ComponentHostName}
                 waitAfterCompletion: 0
-            3-CreateCredFile:
-              command: !Sub >
-                sudo /root/CD-Image/createCredFile.sh ${VaultAdminUser}
-                ${StoreAdminPassword.SsmId} ${AWS::Region} ${ComponentHostName}
-                waitAfterCompletion: 0
-            4-PSMPdeploy:
+            3-PSMPdeploy:
               command: !Sub
                 - >-
                   uid=`curl
                   http://169.254.169.254/latest/meta-data/instance-id` &&
-                  /root/CD-Image/register_and_activation.sh 
+                  /opt/CD-Image/register_and_activation.sh 
                   ${VaultAdminUser} ${StoreAdminPassword.SsmId} 
                   ${VaultIpAddress} $uid root
                 - VaultIpAddress: !If
